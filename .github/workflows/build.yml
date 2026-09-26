@@ -99,6 +99,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd pack
+          # GitHub puts a dot for each space in an asset name. Give the files
+          # these names first, thus SHA256SUMS agrees with the downloads.
+          for f in *.sit *.zip; do mv "$f" "$(echo "$f" | tr ' ' '.')"; done
           sha256sum *.sit *.zip > SHA256SUMS-1.9.6-rebuild
           {
             echo "These archives come from the Underline 1.9.6 source release, built again by run"

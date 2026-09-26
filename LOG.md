@@ -310,3 +310,7 @@ This section records each attempt that failed, and the cause.
   archive.org.
 - The first extraction of CWPro5MacTools.mdf used sectors of 2352 bytes.
   The result was not an HFS volume. The sectors are 2448 bytes.
+- The first pre-release had file names with spaces in SHA256SUMS. GitHub
+  put a dot for each space in the asset names. Thus `shasum -c` could not
+  find the downloads. The release job now gives the files the names with
+  dots before it calculates the SHA-256 values.
