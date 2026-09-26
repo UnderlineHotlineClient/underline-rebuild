@@ -33,9 +33,13 @@ The classic and Mac OS X builds operate on macOS only.
   manual start adds a fifth macOS job, the Mac OS X build on Apple silicon.
 - It downloads the published source release and the files on the mirror.
   It checks the SHA-256 value of each file.
-- GitHub keeps only the logs, for 90 days. The workflow does not keep or
-  upload the downloads or the programs. It does not use a cache. It has no
-  secrets, and it can only read the repository.
+- GitHub keeps the logs, for 90 days. The workflow does not keep or upload
+  the toolchain. It does not use a cache, and it has no secrets.
+- A manual start also puts the programs from the build on the GitHub
+  pre-release "1.9.6 rebuild": one archive for each program, the SHA-256
+  values and the results of the comparison. The archives have no
+  signature, thus they are not a release of Underline. Only the job that
+  makes the pre-release can write to the repository.
 - The Underline releases do not come from GitHub. Each release is built on
   our own computer. This workflow only shows that the published source
   gives the published programs.

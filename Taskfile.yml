@@ -152,3 +152,9 @@ tasks:
     requires: {vars: [KIND]}
     cmds:
       - WORK="{{.WORK}}" sh {{.TASKFILE_DIR}}/compare.sh {{.KIND}}
+
+  pack:
+    desc: Put the programs of KIND (68k, ppc, carbon, macosx) into archives for a try on a Mac (no signature)
+    requires: {vars: [KIND]}
+    cmds:
+      - WORK="{{.WORK}}" sh {{.TASKFILE_DIR}}/pack.sh {{.KIND}}

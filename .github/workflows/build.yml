@@ -37,7 +37,20 @@ jobs:
       # Compare each program with the published program, byte for byte.
       # unar opens the published StuffIt archives.
       - run: brew install unar
-      - run: task compare KIND=$(echo ${{ matrix.target }} | tr A-Z a-z)
+      - run: task compare KIND=$(echo ${{ matrix.target }} | tr A-Z a-z) | tee compare.txt
+      # A manual start makes a set of archives for a try on a Mac. It is
+      # not a release: it has no signature.
+      - if: github.event_name == 'workflow_dispatch'
+        run: |
+          cargo install stuffit --version 0.3.1 --locked
+          task pack KIND=$(echo ${{ matrix.target }} | tr A-Z a-z)
+          mv compare.txt "$RUNNER_TEMP/underline-rebuild/pack/compare-${{ matrix.target }}.txt"
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pack-${{ matrix.target }}
+          path: ${{ runner.temp }}/underline-rebuild/pack/
+          retention-days: 1
 
   macosx:
     strategy:
@@ -54,5 +67,53 @@ jobs:
       - run: task build:macosx
       # The job shows the result but does not fail. A PowerPC difference
       # from gcc 4.2 is not yet known.
-      - run: task compare KIND=macosx
+      - run: task compare KIND=macosx | tee compare.txt
         continue-on-error: true
+      - if: github.event_name == 'workflow_dispatch' && matrix.os == 'macos-15-intel'
+        run: |
+          task pack KIND=macosx
+          mv compare.txt "$RUNNER_TEMP/underline-rebuild/pack/compare-MacOSX.txt"
+      - if: github.event_name == 'workflow_dispatch' && matrix.os == 'macos-15-intel'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pack-MacOSX
+          path: ${{ runner.temp }}/underline-rebuild/pack/
+          retention-days: 1
+
+  # After a manual start, put the archives, their SHA-256 values and the
+  # results of the comparison on one GitHub pre-release. The pre-release has
+  # no signature, thus it is not a release of Underline.
+  rebuild:
+    if: github.event_name == 'workflow_dispatch'
+    needs: [classic, macosx]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pack-*
+          merge-multiple: true
+          path: pack
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd pack
+          sha256sum *.sit *.zip > SHA256SUMS-1.9.6-rebuild
+          {
+            echo "These archives come from the Underline 1.9.6 source release, built again by run"
+            echo "[${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."
+            echo
+            echo "**This is not a release of Underline. The archives have no signature.** The signed release is at https://199x.online/underline/."
+            echo "Each archive has one program. Use the archives to try the programs from this build on a Mac."
+            echo
+            echo "Comparison with the published programs:"
+            echo
+            echo '```'
+            cat compare-*.txt | grep '^compare:' | sed 's/^compare: //'
+            echo '```'
+          } > notes.md
+          gh release delete 1.9.6-rebuild -R "${{ github.repository }}" --yes --cleanup-tag 2>/dev/null || true
+          gh release create 1.9.6-rebuild -R "${{ github.repository }}" --target "${{ github.sha }}" \
+            --prerelease --title "1.9.6 rebuild (no signature)" --notes-file notes.md \
+            *.sit *.zip SHA256SUMS-1.9.6-rebuild

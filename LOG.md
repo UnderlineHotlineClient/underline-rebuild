@@ -203,6 +203,23 @@ Results:
   result of the comparison.
 - We did not find MPW 3.5 or Universal Interfaces 3.4 on archive.org.
 
+### Archives for a try on a Mac
+
+- `pack.sh` puts each program from the build into an archive: a StuffIt
+  archive for a classic program, a zip file for a Mac OS X program. The
+  archive has one folder, and the folder has the program with its
+  published name. It uses stuffit 0.3.1, the tool of the Underline release.
+- On our computer, a 68K client came out of the archive with its resource
+  fork and its type and creator (APPL, HTLC).
+- A manual start of the workflow now makes a GitHub pre-release, "1.9.6
+  rebuild". It has the archives, a SHA256SUMS file and the results of the
+  comparison. It has no signature, thus it is not a release of Underline.
+- The published archives also have the Bookmarks, the server folders and
+  other files. The packaging that adds them is not in the source release.
+  Thus these archives have the programs only. The full packaging (the
+  folders, the CD, the ISO and the diskettes) can come here when a source
+  release has the packaging scripts.
+
 ### Changes for the next source release
 
 The results above show problems in the 1.9.6 source release. We changed

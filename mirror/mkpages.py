@@ -215,9 +215,13 @@ def toolchain_page(inp):
                         "fifth macOS job, the Mac OS X build on Apple silicon."),
             ("Downloads", "The published source release and the files on this mirror. Each job checks the "
                           "SHA-256 value of each file."),
-            ("Kept", "Only the logs of the runs. GitHub keeps them for 90 days. The workflow does not keep "
-                     "or upload the downloads or the programs, it does not use a cache, and it has no "
-                     "secrets. It can only read the repository."),
+            ("Kept", "The logs of the runs, for 90 days. The workflow does not keep or upload the "
+                     "toolchain, it does not use a cache, and it has no secrets."),
+            ("Try it", "A manual start also puts the programs from the build on a GitHub pre-release, "
+                       '<a href="https://github.com/UnderlineHotlineClient/underline-rebuild/releases">1.9.6 '
+                       "rebuild</a>: one archive for each program, with SHA-256 values and the results of the "
+                       "comparison. The archives have no signature. Thus they are not a release of "
+                       "Underline. Only this job can write to the repository."),
             ("Not", "The releases do not come from GitHub. We build each release on our own computer. The "
                     "same tasks give the same result on any Mac. GitHub only shows that the published source "
                     "gives the published programs."),
