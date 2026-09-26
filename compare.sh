@@ -31,6 +31,16 @@ for prog in client server tracker; do
 			echo "compare: $kind $prog bundle: same, $(find "$newapp" -type f | wc -l | tr -d ' ') files"
 		else
 			echo "compare: $kind $prog bundle: DIFFERS: $(echo "$d" | wc -l | tr -d ' ') files"; echo "$d" | head -5; bad=1
+			# For a different executable: the sizes, the number of different
+			# bytes, the UUID of each slice and the first differences.
+			pe=$(find "$pubapp/Contents/MacOS" -type f | head -1); ne=$(find "$newapp/Contents/MacOS" -type f | head -1)
+			if ! cmp -s "$pe" "$ne"; then
+				echo "  executable: sizes $(wc -c < "$pe" | tr -d ' ') and $(wc -c < "$ne" | tr -d ' '), $(cmp -l "$pe" "$ne" 2>/dev/null | wc -l | tr -d ' ') bytes differ"
+				for arch in arm64 x86_64; do
+					echo "  $arch uuid: $(otool -arch $arch -l "$pe" | awk '/LC_UUID/{f=1} f&&/uuid/{print $2; exit}') and $(otool -arch $arch -l "$ne" | awk '/LC_UUID/{f=1} f&&/uuid/{print $2; exit}')"
+				done
+				cmp -l "$pe" "$ne" 2>/dev/null | head -8 | sed 's/^/  offset /'
+			fi
 		fi
 		continue
 	fi

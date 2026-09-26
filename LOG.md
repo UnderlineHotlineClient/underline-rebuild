@@ -329,3 +329,13 @@ This section records each attempt that failed, and the cause.
   put a dot for each space in the asset names. Thus `shasum -c` could not
   find the downloads. The release job now gives the files the names with
   dots before it calculates the SHA-256 values.
+- A step with `task compare ... | tee compare.txt` passed when the
+  comparison failed. The shell gave the exit status of `tee`, not of
+  `task`. The steps now use `set -o pipefail`. The classic steps had the
+  same problem, but their comparisons had passed.
+- On the first run of the branch, the runner used Xcode 26.3 and Apple
+  clang 17.0.0 (clang-1700.6.4.2), the same versions as our computer. But
+  the executable file of each 64-bit program was different from the
+  published file. All other files in the bundles were the same.
+  `compare.sh` now shows the sizes, the number of different bytes, the
+  UUID of each slice and the first different offsets.

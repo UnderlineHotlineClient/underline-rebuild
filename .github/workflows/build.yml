@@ -37,7 +37,7 @@ jobs:
       # Compare each program with the published program, byte for byte.
       # unar opens the published StuffIt archives.
       - run: brew install unar
-      - run: task compare KIND=$(echo ${{ matrix.target }} | tr A-Z a-z) | tee compare.txt
+      - run: set -o pipefail; task compare KIND=$(echo ${{ matrix.target }} | tr A-Z a-z) | tee compare.txt
       # A manual start makes a set of archives for a try on a Mac. It is
       # not a release: it has no signature.
       - if: github.event_name == 'workflow_dispatch'
@@ -67,7 +67,7 @@ jobs:
       - run: task build:macosx
       # The job shows the result but does not fail. A PowerPC difference
       # from gcc 4.2 is not yet known.
-      - run: task compare KIND=macosx | tee compare.txt
+      - run: set -o pipefail; task compare KIND=macosx | tee compare.txt
         continue-on-error: true
       - if: github.event_name == 'workflow_dispatch' && matrix.os == 'macos-15-intel'
         run: |
@@ -92,7 +92,7 @@ jobs:
           ls -d /Applications/Xcode*.app
           if [ -d /Applications/Xcode_26.3.app ]; then sudo xcode-select -s /Applications/Xcode_26.3.app; fi
       - run: task build:macos
-      - run: task compare KIND=macos | tee compare.txt
+      - run: set -o pipefail; task compare KIND=macos | tee compare.txt
       - if: github.event_name == 'workflow_dispatch'
         run: |
           task pack KIND=macos

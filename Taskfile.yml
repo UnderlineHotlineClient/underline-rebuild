@@ -171,7 +171,7 @@ tasks:
         rm -rf "$R" && mkdir -p "$R/Vendor"
         ditto -x -k "$(sh {{.TASKFILE_DIR}}/fetch.sh supplement)" "$R"
         ditto "{{.SRC}}" "$R/Vendor/underline"
-        xcodebuild -version | head -1; clang --version | head -1
+        xcodebuild -version | head -1; clang --version | head -1; echo "SDK $(xcrun --show-sdk-version)"; ld -v 2>&1 | head -1
         for p in client server tracker; do
           make -C "$R/Sources/Underline/x64" app PROGRAM=$p BUILD="{{.WORK}}/build64/$p" -j{{.JOBS}} > "{{.WORK}}/build64-$p.log" 2>&1 \
             || { tail -20 "{{.WORK}}/build64-$p.log"; exit 1; }
