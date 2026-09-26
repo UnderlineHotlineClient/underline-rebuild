@@ -1,0 +1,14 @@
+# The cache rules of the 199x.online mirror. Copy this file to the mirror
+# as .htaccess.
+
+# The index pages change. Browsers always check them again. The CDN keeps
+# a copy for five minutes.
+<FilesMatch "\.html?$">
+  Header set Cache-Control "public, max-age=0, s-maxage=300"
+</FilesMatch>
+
+# A mirrored file does not change. A build checks its SHA-256 value, and a
+# changed file gets a new name. Thus caches can keep it for one year.
+<FilesMatch "\.(bin|hqx|sit|zip|gz|tgz|img|image|dmg|iso|toast|smi)$">
+  Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>

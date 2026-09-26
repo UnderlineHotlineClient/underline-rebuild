@@ -1,0 +1,154 @@
+# Build the Underline source release again from public inputs.
+# Each step is a task. Thus `task ci` gives the same result on your computer
+# and on a hosted runner.
+# WORK holds all the downloads and all the build output.
+# mps cannot open a folder whose name starts with a dot. Thus the WORK path
+# must not have such a folder.
+version: '3'
+
+vars:
+  WORK:
+    sh: echo "${WORK:-${RUNNER_TEMP:-/tmp}/underline-rebuild}"
+  INPUTS: '{{.WORK}}/inputs'
+  BIN: '{{.WORK}}/bin'
+  MPW: '{{.WORK}}/MPW'
+  MPS_COMMIT: e2b8c66e08ca
+  # The build ID of the published 1.9.6 programs.
+  RELEASE_ID: r433-7ada06a
+  SRC: '{{.WORK}}/src'
+  DEPS: '{{.WORK}}/mps-deps'
+  XC3: '{{.WORK}}/macho-deps/xc3'
+  JOBS:
+    sh: getconf _NPROCESSORS_ONLN
+
+env:
+  INPUTS: '{{.INPUTS}}'
+
+tasks:
+  ci:
+    desc: Do all the steps that this computer can do
+    cmds:
+      - task: ladder:1
+      # Makefile.mps in the source release uses Rez and SetFile. These
+      # tools are on macOS only.
+      - task: build:classic
+        platforms: [darwin]
+
+  work:
+    internal: true
+    cmds:
+      - |
+        case "/{{.WORK}}/" in */.[!./]*) echo "WORK {{.WORK}} has a dot-named directory, which mps cannot enter" >&2; exit 1 ;; esac
+        mkdir -p "{{.WORK}}"
+
+  fetch:
+    desc: Download one input (NAME=) and check its SHA-256 value
+    requires: {vars: [NAME]}
+    deps: [work]
+    cmds:
+      - sh {{.TASKFILE_DIR}}/fetch.sh {{.NAME}}
+
+  mps:upstream:
+    desc: Build mps without changes, at the commit that the source release's patch uses
+    deps: [work]
+    status:
+      - test -x "{{.BIN}}/mps-upstream"
+    cmds:
+      - GOBIN="{{.WORK}}/gobin" go install "github.com/elliotnunn/mps@{{.MPS_COMMIT}}"
+      - mkdir -p "{{.BIN}}" && mv "{{.WORK}}/gobin/mps" "{{.BIN}}/mps-upstream"
+
+  mpw:
+    desc: Install MPW 3.5 with mps from the pinned image
+    deps: [mps:upstream]
+    status:
+      - test -f "{{.MPW}}/ToolServer"
+    cmds:
+      - MPW="{{.MPW}}" "{{.BIN}}/mps-upstream" -install "$(sh {{.TASKFILE_DIR}}/fetch.sh mpw)"
+
+  ladder:1:
+    desc: 'Rung 1: build hello as a PowerPC and a 68K MPW tool with the Apple compilers'
+    deps: [mpw]
+    cmds:
+      - MPW="{{.MPW}}" MPS="{{.BIN}}/mps-upstream" sh {{.TASKFILE_DIR}}/ladder/1-mpw/build.sh
+
+  source:
+    desc: Unzip the source release and keep its resource forks
+    deps: [work]
+    status:
+      - test -f "{{.SRC}}/Makefile.mps"
+    cmds:
+      - |
+        z=$(sh {{.TASKFILE_DIR}}/fetch.sh source)
+        rm -rf "{{.WORK}}/src.partial" && mkdir -p "{{.WORK}}/src.partial"
+        ditto -x -k "$z" "{{.WORK}}/src.partial"
+        rm -rf "{{.SRC}}" && mv "{{.WORK}}/src.partial/UL HL Source 1.9.6" "{{.SRC}}" && rm -rf "{{.WORK}}/src.partial"
+
+  mps:
+    desc: Build mps with the patch in the source release (Toolchains/mps/mps.patch)
+    deps: [source]
+    status:
+      - test -x "{{.BIN}}/mps"
+    cmds:
+      - |
+        rm -rf "{{.WORK}}/mps-src"
+        git clone -q https://github.com/elliotnunn/mps "{{.WORK}}/mps-src"
+        cd "{{.WORK}}/mps-src" && git checkout -q {{.MPS_COMMIT}} && git apply "{{.SRC}}/Toolchains/mps/mps.patch"
+        mkdir -p "{{.BIN}}" && go build -o "{{.BIN}}/mps" .
+
+  deps:classic:
+    desc: Install the classic toolchain from its parts and check each part against deps.manifest
+    deps: [mps]
+    status:
+      - for p in MPW cw5 cw6 ui34 c68k ui68k; do test -d "{{.DEPS}}/$p" || exit 1; done
+    cmds:
+      - |
+        set -e
+        names="mpw part-cw5 part-cw6 part-ui34 part-c68k part-ui68k part-mwtools"
+        for n in $names; do sh {{.TASKFILE_DIR}}/fetch.sh $n > "{{.WORK}}/$n.path" & done
+        wait
+        for n in $names; do test -s "{{.WORK}}/$n.path" || { echo "deps:classic: $n not fetched" >&2; exit 1; }; done
+        rm -rf "{{.DEPS}}.partial" && mkdir -p "{{.DEPS}}.partial"
+        MPW="{{.DEPS}}.partial/MPW" "{{.BIN}}/mps" -install "$(cat "{{.WORK}}/mpw.path")" > /dev/null
+        for n in cw5 cw6 ui34 c68k ui68k mwtools; do ditto -x -k "$(cat "{{.WORK}}/part-$n.path")" "{{.DEPS}}.partial"; done
+        for p in MPW cw5 cw6 ui34 c68k ui68k; do
+          python3 "{{.SRC}}/Toolchains/mps/treemanifest.py" check-part "{{.DEPS}}.partial/$p" "{{.SRC}}/Toolchains/mps/deps.manifest" $p
+        done
+        rm -rf "{{.DEPS}}" && mv "{{.DEPS}}.partial" "{{.DEPS}}"
+        echo "deps:classic: six parts, each as the release's deps.manifest lists it"
+
+  build:classic:
+    desc: Build the classic programs with Makefile.mps (TARGET=68K, PPC or Carbon builds three of the nine)
+    deps: [deps:classic]
+    cmds:
+      - make -C "{{.SRC}}" -f Makefile.mps {{.TARGET}} -j{{.JOBS}} ID={{.RELEASE_ID}} MPS="{{.BIN}}/mps" MPS_DEPS="{{.DEPS}}" OBJ="{{.WORK}}/obj" BIN="{{.WORK}}/Binary"
+      - find "{{.WORK}}/Binary" -maxdepth 2 -mindepth 2 | sed 's|^{{.WORK}}/||' | sort
+
+  deps:macho:
+    desc: Install gcc 4.2 and the 10.4u SDK from their part and check it against deps.manifest
+    deps: [source]
+    status:
+      - test -x "{{.XC3}}/usr/bin/g++-4.2"
+    cmds:
+      - |
+        set -e
+        z=$(sh {{.TASKFILE_DIR}}/fetch.sh part-xc3)
+        rm -rf "{{.XC3}}.partial" && mkdir -p "{{.XC3}}.partial"
+        ditto -x -k "$z" "{{.XC3}}.partial"
+        python3 "{{.SRC}}/Toolchains/mps/treemanifest.py" check-part "{{.XC3}}.partial/xc3" "{{.SRC}}/Toolchains/xcode3/deps.manifest" xc3
+        rm -rf "{{.XC3}}" && mv "{{.XC3}}.partial/xc3" "{{.XC3}}" && rmdir "{{.XC3}}.partial"
+
+  build:macosx:
+    desc: Build the Mac OS X programs (ppc and i386) with Makefile.macosx and gcc 4.2
+    deps: [deps:macho]
+    cmds:
+      - |
+        PATH="{{.XC3}}/usr/bin:$PATH" make -C "{{.SRC}}" -f Makefile.macosx -j{{.JOBS}} \
+          ID={{.RELEASE_ID}} CXX=g++-4.2 SDK="{{.XC3}}/MacOSX10.4u.sdk" EXTRAFLAGS=-ffriend-injection LDFLAGS="-Wl,-force_cpusubtype_ALL -Wl,-S" \
+          OBJ="{{.WORK}}/obj-macosx" BIN="{{.WORK}}/Binary/MacOSX"
+      - for f in "{{.WORK}}"/Binary/MacOSX/*.app/Contents/MacOS/*; do lipo -info "$f" | sed 's|^.*/Binary/|Binary/|'; done
+
+  compare:
+    desc: Compare the programs of KIND (68k, ppc, carbon or macosx) with the published programs
+    requires: {vars: [KIND]}
+    cmds:
+      - WORK="{{.WORK}}" sh {{.TASKFILE_DIR}}/compare.sh {{.KIND}}

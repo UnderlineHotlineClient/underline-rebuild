@@ -1,0 +1,40 @@
+# name  sha256  path under https://199x.online/mirror/  fallback URL or -
+# The SHA-256 values are the same as the values in
+# Toolchains/*/inputs.sha256 of the Underline source release.
+mpw     99bbfa95bb9800c8ffc572fce6d72e561f012331c5c623fa45f732502b6fa872  apple/ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM_Images/MPW-GM.img.bin  https://ftp.zx.net.nz/pub/micro/macintosh/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc/MPW-GM_Images/MPW-GM.img.bin
+ui34    7983bffd92bdd97b152d5738e1040c353ddc27e349c7bfec6a6da1e1a4fb3dc1  apple/ftp.apple.com/developer/Development_Kits/UniversalInterfaces3.4.img.bin  -
+cw5     e52dcab3b2ce71e884089d9c44098bddbfe890fd46d2f129f21d1653932db332  metrowerks/CW_Pro_5_Tools_Mac.toast_.zip  -
+cw6     673a72875c3f001ca557280d0e1d5b4a94f2827d595bf4b70cc76a79cfc7b9c1  metrowerks/CodeWarrior%20Tools%206.0.toast  -
+source  a2043f92cd5e880581fb2cab75ee6d46e98f4ea899d83dbed3d54e6c287bf9fb  https://199x.online/underline/Source/UL%20HL%20Source%201.9.6.zip  -
+# The parts of the classic toolchain. Toolchains/mps/deps.sh in the source
+# release makes these parts from the images above. Each part is a zip file
+# that keeps the resource forks.
+# After the unzip, the build checks each part against deps.manifest in the
+# source release.
+# mps installs MPW from the mpw image. The mwtools part then adds the four
+# MPW tools from CodeWarrior Pro 5.
+part-cw5      db085b189db65fb2c5192c0626eed69bfc2b48ab67cb436c217f906398921e7e  underline-toolchain/mps-1.9.6/cw5.zip  -
+part-cw6      039a97e61b951f0b00e82a086eeed9593e90017d00c4603c3470ef626959eedb  underline-toolchain/mps-1.9.6/cw6.zip  -
+part-ui34     aab15ecb9f79ce52eeb96051651efefe5245fcb97de65037239ac2349df948ba  underline-toolchain/mps-1.9.6/ui34.zip  -
+part-c68k     67dbb69b82f257ececa7245d0a7e4bc10982a43395d3d0b4d4ba1dc6e87f0c26  underline-toolchain/mps-1.9.6/c68k.zip  -
+part-ui68k    c5a2236c8cfabf0a65eb364baa263c1571316a3cdf1eb4352dcc8f3f4dc3a248  underline-toolchain/mps-1.9.6/ui68k.zip  -
+part-mwtools  22ebec669eae3dff8ed008465eb5c93abb9c2e2b0671242480104e3a06448b7f  underline-toolchain/mps-1.9.6/mwtools.zip  -
+# The Mach-O toolchain: gcc 4.2 and the 10.4u SDK from Xcode 3.2.6.
+# Toolchains/xcode3/deps.sh in the source release makes this part.
+# After the unzip, the build checks it against
+# Toolchains/xcode3/deps.manifest in the source release.
+part-xc3      86202a68a7f3243330ce592834f3a995c445c608e5ec1884084b6332475364ea  underline-toolchain/xcode3-1.9.6/xc3-2.zip  -
+# The published 1.9.6 programs. The SHA-256 values come from
+# SHA256SUMS-1.9.6 of the release.
+pub-68k-client  610ca695feb32c6458971a7d11e0d03c25bc588a9765eb2ddd41828cf584be7d  https://199x.online/underline/68K/UL%20HL%20Client%201.9.6%2068K.sit  -
+pub-68k-server  0da4a1fd8e1933c17c5f58fb72786dd861312740e7ed04c770b6a331d17142b0  https://199x.online/underline/68K/UL%20HL%20Server%201.9.6%2068K.sit  -
+pub-68k-tracker  b167f9bed27a900ba7a48c247243c3657b6449c75b2216692bbab54abc4ddc33  https://199x.online/underline/68K/UL%20HL%20Tracker%201.9.6%2068K.sit  -
+pub-carbon-client  8bb504950ae8283b48c89e02ed3b03c39e87918f396e0fe183f119909f8c7f0a  https://199x.online/underline/Carbon/UL%20HL%20Client%201.9.6%20Carbon.sit  -
+pub-carbon-server  887a11b0b00c85438a91359e0942e80f19f82fc9130d5e1482888fa397faf514  https://199x.online/underline/Carbon/UL%20HL%20Server%201.9.6%20Carbon.sit  -
+pub-carbon-tracker  4b5fdae7db5c863485f0dee211106afe7da5b8fad1379135ff9224041fa368f5  https://199x.online/underline/Carbon/UL%20HL%20Tracker%201.9.6%20Carbon.sit  -
+pub-macosx-client  08f9604c3f59c1b6eca81237fcd64ce76812b09ecfd7d121948399e9e490dbf8  https://199x.online/underline/Mac%20OS%20X/UL%20HL%20Client%201.9.6%20MacOSX.zip  -
+pub-macosx-server  92648963460433801195ef510cb87448e550fc4b9f0cda7ef92fff9d19190220  https://199x.online/underline/Mac%20OS%20X/UL%20HL%20Server%201.9.6%20MacOSX.zip  -
+pub-macosx-tracker  7a68358791855444befeb98c4dd88bf5e8f1b7c3c1896f27d10df74d4d1cede2  https://199x.online/underline/Mac%20OS%20X/UL%20HL%20Tracker%201.9.6%20MacOSX.zip  -
+pub-ppc-client  9d2a295d38a573bec8f23c2944a4e54db96587e2bb3481f12d228670382c4bee  https://199x.online/underline/PPC/UL%20HL%20Client%201.9.6%20PPC.sit  -
+pub-ppc-server  515231bafe7cc3a543efc7155089af13d47821cf5af3eabd446924ee8ecc5717  https://199x.online/underline/PPC/UL%20HL%20Server%201.9.6%20PPC.sit  -
+pub-ppc-tracker  f985233739efa968f39bc45a7d06951eb634c61131ea386471b1309e33445f73  https://199x.online/underline/PPC/UL%20HL%20Tracker%201.9.6%20PPC.sit  -

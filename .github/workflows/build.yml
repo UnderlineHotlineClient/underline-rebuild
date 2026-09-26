@@ -1,0 +1,58 @@
+name: build
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Each job runs `task`. You can run the same commands on your computer.
+# The free plan runs a maximum of five macOS jobs at the same time.
+# The classic build uses three macOS jobs, one for each target.
+# The Mac OS X build uses one macOS job, or two when you start the
+# workflow manually.
+# The ladder uses Linux runners only.
+jobs:
+  ladder:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/task
+      - run: task ladder:1
+
+  classic:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [68K, PPC, Carbon]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/task
+      - run: task build:classic TARGET=${{ matrix.target }}
+      # Compare each program with the published program, byte for byte.
+      # unar opens the published StuffIt archives.
+      - run: brew install unar
+      - run: task compare KIND=$(echo ${{ matrix.target }} | tr A-Z a-z)
+
+  macosx:
+    strategy:
+      fail-fast: false
+      matrix:
+        # gcc 4.2 is an Intel program. It runs natively on Intel and with
+        # Rosetta on arm. The arm job uses approximately twice the time, thus
+        # it runs only when you start the workflow manually.
+        os: ${{ fromJSON(github.event_name == 'workflow_dispatch' && '["macos-15-intel","macos-latest"]' || '["macos-15-intel"]') }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/task
+      - run: task build:macosx
+      # The job shows the result but does not fail. A PowerPC difference
+      # from gcc 4.2 is not yet known.
+      - run: task compare KIND=macosx
+        continue-on-error: true
