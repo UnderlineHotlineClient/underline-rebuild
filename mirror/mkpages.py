@@ -36,6 +36,17 @@ ORIGINALS = [
      "The Carbon MSL libraries, the CFM-68K Open Transport libraries and MoreFiles."),
 ]
 
+# The same disc on archive.org, and the result of the comparison (HTML).
+ARCHIVE = {
+    "cw5": 'Item <a href="https://archive.org/details/CWPro5Mac">CWPro5Mac</a>, file CWPro5MacTools.mdf. '
+           'This file has raw sectors of 2448 bytes. Its data is the same as our copy, byte for byte, '
+           'with two more sectors at the end.',
+    "cw6": 'Item <a href="https://archive.org/details/codewarrior-6.0">codewarrior-6.0</a>, file '
+           'CW_Tools_6.0_Mac.iso. This is a different image of the same disc. Some bytes in the volume '
+           'information are different. The part that deps.sh makes from it agrees with deps.manifest, '
+           'thus the files are the same.',
+}
+
 # name in inputs.txt: (title, size in bytes, made from, what it holds, used by)
 PARTS = [
     ("part-mwtools", "mwtools", 2056238, "CodeWarrior Pro 5",
@@ -139,8 +150,10 @@ def mirror_page(inp):
             'values in <code>Toolchains/*/inputs.sha256</code> of the Underline source release.</p>']
     for name, title, size, source, got, what in ORIGINALS:
         sha, path = inp[name]
+        extra = [("archive.org", ARCHIVE[name])] if name in ARCHIVE else []
         body.append(card(name, title, [("File", link(path, "")), ("Size", mb(size)),
-                                       ("Publisher", e(source)), ("Our copy", got), ("Contents", e(what)),
+                                       ("Publisher", e(source)), ("Our copy", got)] + extra +
+                                      [("Contents", e(what)),
                                        ("SHA-256", "<code>%s</code>" % sha)]))
     body += ['<h3 class="red" id="parts">Toolchain parts</h3>',
              '<p>These files are not originals. Each part is a zip file with a folder that the scripts in '

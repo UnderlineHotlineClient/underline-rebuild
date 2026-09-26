@@ -187,6 +187,22 @@ Results:
   not of the developer files on ftp.apple.com. It does not have them. The
   archive.org search did not find them in a different item.
 
+### The CodeWarrior discs on archive.org
+
+- Our copies of the two CodeWarrior discs came from Macintosh Garden. The
+  mirror page now says this without doubt.
+- CodeWarrior Pro 5: the item CWPro5Mac has CWPro5MacTools.mdf. This file
+  has raw sectors of 2448 bytes (2352 bytes and 96 bytes of subchannel
+  data). We took the 2048 data bytes from each sector. The result is the
+  same as our copy, byte for byte, with two more sectors at the end.
+- CodeWarrior Pro 6: the item codewarrior-6.0 has CW_Tools_6.0_Mac.iso.
+  Its HFS partition has the same size as our copy, but 2482 bytes in the
+  volume information are different. `deps.sh` made the cw6 part from it,
+  and the part agreed with `deps.manifest`. Thus the files are the same.
+- The mirror page now gives the archive.org item for each disc and the
+  result of the comparison.
+- We did not find MPW 3.5 or Universal Interfaces 3.4 on archive.org.
+
 ### Changes for the next source release
 
 The results above show problems in the 1.9.6 source release. We changed
@@ -271,3 +287,9 @@ This section records each attempt that failed, and the cause.
   their downloads at the same time. `curl --retry` does not try again after
   a 403. `fetch.sh` now uses `--retry-all-errors` with a delay of 10
   seconds.
+- The first download of CW_Tools_6.0_Mac.iso stopped at 38 MB, and the
+  first comparison was wrong. `curl -f` without `--retry` and without `-C -`
+  did not continue. We downloaded it again and checked the MD5 value from
+  archive.org.
+- The first extraction of CWPro5MacTools.mdf used sectors of 2352 bytes.
+  The result was not an HFS volume. The sectors are 2448 bytes.
