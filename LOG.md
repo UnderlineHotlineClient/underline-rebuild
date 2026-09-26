@@ -220,6 +220,21 @@ Results:
   folders, the CD, the ISO and the diskettes) can come here when a source
   release has the packaging scripts.
 
+### Experimental: the 64-bit Mac programs (branch supplement)
+
+- The 1.9.6 source release has the `(64)` units, but it cannot build the
+  64-bit Mac programs. Their build reads files that are not in the source
+  release: the build folder, the POSIX file system units and some
+  compatibility headers.
+- A build supplement has these files. It has the layout of the Underline
+  development repository. The build puts the 1.9.6 source release at
+  `Vendor/underline` in it, and the Makefile operates without changes.
+- The supplement is on the mirror. It is not a release. The next source
+  release will contain these files.
+- On our computer (Xcode 26.3, Apple clang 17.0.0), the client, the server
+  and the tracker from 1.9.6 and the supplement were the same as the
+  published programs: all eight files in each app bundle, byte for byte.
+
 ### Changes for the next source release
 
 The results above show problems in the 1.9.6 source release. We changed

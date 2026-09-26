@@ -1,5 +1,5 @@
 #!/bin/sh
-# pack.sh KIND: put each program of KIND (68k, ppc, carbon or macosx) from
+# pack.sh KIND: put each program of KIND (68k, ppc, carbon, macosx or macos) from
 # $WORK/Binary into an archive in $WORK/pack, for a try on a Mac.
 # A classic program goes into a StuffIt archive (.sit), a Mac OS X program
 # into a zip file. Each archive holds one folder with the program in it,
@@ -7,10 +7,10 @@
 # "rebuild".
 # The archives are not a release. They have no signature.
 set -eu
-kind=${1:?usage: pack.sh 68k|ppc|carbon|macosx}
+kind=${1:?usage: pack.sh 68k|ppc|carbon|macosx|macos}
 : "${WORK:?}"
 STUFFIT=${STUFFIT:-stuffit}
-case $kind in 68k) dir=68K ;; ppc) dir=PPC ;; carbon) dir=Carbon ;; macosx) dir=MacOSX ;; *) exit 2 ;; esac
+case $kind in 68k) dir=68K ;; ppc) dir=PPC ;; carbon) dir=Carbon ;; macosx) dir=MacOSX ;; macos) dir=macOS ;; *) exit 2 ;; esac
 out="$WORK/pack"
 mkdir -p "$out"
 for prog in client server tracker; do
@@ -22,10 +22,12 @@ for prog in client server tracker; do
 	stage="$WORK/pack-stage/$kind-$prog/$folder"
 	rm -rf "$WORK/pack-stage/$kind-$prog"
 	mkdir -p "$stage"
-	if [ "$kind" = macosx ]; then
+	if [ "$kind" = macosx ] || [ "$kind" = macos ]; then
 		app=$(find "$pub" -maxdepth 2 -name "*.app" -type d | head -1)
 		[ -n "$app" ] || { echo "pack: no published $kind $prog; run compare first" >&2; exit 1; }
-		ditto "$WORK/Binary/MacOSX/$name.app" "$stage/$(basename "$app")"
+		if [ "$kind" = macos ]; then src=$(find "$WORK/build64/$prog" -maxdepth 1 -name "*.app" -type d | head -1)
+		else src="$WORK/Binary/MacOSX/$name.app"; fi
+		ditto "$src" "$stage/$(basename "$app")"
 		archive="$out/$folder.zip"
 		rm -f "$archive"
 		(cd "$(dirname "$stage")" && ditto -c -k --sequesterRsrc --keepParent "$folder" "$archive")

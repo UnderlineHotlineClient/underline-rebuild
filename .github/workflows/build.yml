@@ -80,12 +80,36 @@ jobs:
           path: ${{ runner.temp }}/underline-rebuild/pack/
           retention-days: 1
 
+  # Experimental: the 64-bit Mac programs, from the source release and the
+  # build supplement.
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/task
+      # The release used Xcode 26.3. Use it if the runner has it.
+      - run: |
+          ls -d /Applications/Xcode*.app
+          if [ -d /Applications/Xcode_26.3.app ]; then sudo xcode-select -s /Applications/Xcode_26.3.app; fi
+      - run: task build:macos
+      - run: task compare KIND=macos | tee compare.txt
+      - if: github.event_name == 'workflow_dispatch'
+        run: |
+          task pack KIND=macos
+          mv compare.txt "$RUNNER_TEMP/underline-rebuild/pack/compare-macOS.txt"
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pack-macOS
+          path: ${{ runner.temp }}/underline-rebuild/pack/
+          retention-days: 1
+
   # After a manual start, put the archives, their SHA-256 values and the
   # results of the comparison on one GitHub pre-release. The pre-release has
   # no signature, thus it is not a release of Underline.
   rebuild:
     if: github.event_name == 'workflow_dispatch'
-    needs: [classic, macosx]
+    needs: [classic, macosx, macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write

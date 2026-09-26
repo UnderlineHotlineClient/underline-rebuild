@@ -158,3 +158,22 @@ tasks:
     requires: {vars: [KIND]}
     cmds:
       - WORK="{{.WORK}}" sh {{.TASKFILE_DIR}}/pack.sh {{.KIND}}
+
+  build:macos:
+    desc: Build the 64-bit Mac programs (arm64 and x86_64) from the source release and the build supplement
+    deps: [source]
+    cmds:
+      - |
+        set -e
+        # The supplement has the layout of the panorama2 repository. The
+        # source release goes at Vendor/underline in it, as there.
+        R="{{.WORK}}/repo"
+        rm -rf "$R" && mkdir -p "$R/Vendor"
+        ditto -x -k "$(sh {{.TASKFILE_DIR}}/fetch.sh supplement)" "$R"
+        ditto "{{.SRC}}" "$R/Vendor/underline"
+        xcodebuild -version | head -1; clang --version | head -1
+        for p in client server tracker; do
+          make -C "$R/Sources/Underline/x64" app PROGRAM=$p BUILD="{{.WORK}}/build64/$p" -j{{.JOBS}} > "{{.WORK}}/build64-$p.log" 2>&1 \
+            || { tail -20 "{{.WORK}}/build64-$p.log"; exit 1; }
+          ls -d "{{.WORK}}/build64/$p/"*.app
+        done
