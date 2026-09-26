@@ -314,3 +314,6 @@ This section records each attempt that failed, and the cause.
   put a dot for each space in the asset names. Thus `shasum -c` could not
   find the downloads. The release job now gives the files the names with
   dots before it calculates the SHA-256 values.
+- A step with `task compare ... | tee compare.txt` passed when the
+  comparison failed, because the shell gave the exit status of `tee`. The
+  steps now use `set -o pipefail`.
