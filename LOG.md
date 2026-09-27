@@ -235,6 +235,14 @@ Results:
   and the tracker from 1.9.6 and the supplement were the same as the
   published programs: all eight files in each app bundle, byte for byte.
 
+### Result: the 64-bit Mac programs on a hosted runner
+
+- With supplement-2e151951.zip, the macos job on macos-latest built the
+  client, the server and the tracker. All eight files in each app bundle
+  were the same as the published files, byte for byte.
+- Thus the 1.9.6 source release and the supplement give the published
+  64-bit Mac programs on a computer that is not ours.
+
 ### Changes for the next source release
 
 The results above show problems in the 1.9.6 source release. We changed
