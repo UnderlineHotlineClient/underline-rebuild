@@ -243,6 +243,19 @@ Results:
 - Thus the 1.9.6 source release and the supplement give the published
   64-bit Mac programs on a computer that is not ours.
 
+### Plan for 1.9.7
+
+- From 1.9.7, the source release has a `Build` folder. It holds the files
+  of the supplement, with the same layout. A lane finds the source at the
+  folder above `Build`.
+- For 1.9.7, `main` will download the 1.9.7 source release and run, for
+  example, `make -C "Build/Sources/Underline/x64" app PROGRAM=server`. It
+  will not download the supplement.
+- The `supplement` branch stays the way to build 1.9.6.
+- Later in 1.9.7, the `Build` folder will also have the Windows and Linux
+  builds and the packaging. This project will build and compare them when
+  they are there.
+
 ### Changes for the next source release
 
 The results above show problems in the 1.9.6 source release. We changed
