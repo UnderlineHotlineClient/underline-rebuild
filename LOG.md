@@ -339,3 +339,9 @@ This section records each attempt that failed, and the cause.
   published file. All other files in the bundles were the same.
   `compare.sh` now shows the sizes, the number of different bytes, the
   UUID of each slice and the first different offsets.
+- The difference was the ad hoc code signature. The published programs
+  were signed with pages of 4096 bytes (for example 481 hashes in the
+  client). The codesign tool on the runner (macOS 26) used pages of 16384
+  bytes (121 hashes). The UUID of each slice was the same, thus the code was
+  the same. Without the signature, the tracker was the same, byte for
+  byte. The build now signs again with `--pagesize 4096`.
