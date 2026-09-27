@@ -40,7 +40,7 @@ pub-ppc-server  515231bafe7cc3a543efc7155089af13d47821cf5af3eabd446924ee8ecc5717
 pub-ppc-tracker  f985233739efa968f39bc45a7d06951eb634c61131ea386471b1309e33445f73  https://199x.online/underline/PPC/UL%20HL%20Tracker%201.9.6%20PPC.sit  -
 # The build supplement: what the 1.9.6 source release lacks to build the
 # 64-bit Mac programs (Sources/Underline/supplement.sh in panorama2).
-supplement    8a50b0da13d3522484fd973f37c1c02a8e4d0b403202dadee8cda96429335f41  underline-toolchain/supplement-1.9.6/supplement-fa91ab34.zip  -
+supplement    19a69b2f806c91c3661d5cb4c0254bcba7ab2463adaebd6203b59e1661be07e9  underline-toolchain/supplement-1.9.6/supplement-2e151951.zip  -
 pub-macos-client  efd530d888f3be2a430b23bb67fe85779363c2726b46be9183328d6e03e8140d  https://199x.online/underline/macOS/UL%20HL%20Client%201.9.6%20macOS.zip  -
 pub-macos-server  dd37d9bbc92ed4e879d32cffa05017e90556f19e7f99ee4915d1d27aceb88f7d  https://199x.online/underline/macOS/UL%20HL%20Server%201.9.6%20macOS.zip  -
 pub-macos-tracker  b59088d6ca689244b08aca936f37681ae5429ee08ae02b80020aa460d837a552  https://199x.online/underline/macOS/UL%20HL%20Tracker%201.9.6%20macOS.zip  -

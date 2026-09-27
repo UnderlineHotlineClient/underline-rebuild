@@ -175,8 +175,5 @@ tasks:
         for p in client server tracker; do
           make -C "$R/Sources/Underline/x64" app PROGRAM=$p BUILD="{{.WORK}}/build64/$p" -j{{.JOBS}} > "{{.WORK}}/build64-$p.log" 2>&1 \
             || { tail -20 "{{.WORK}}/build64-$p.log"; exit 1; }
-          # The Makefile signs with the page size of the host. The release
-          # was signed with pages of 4096 bytes; newer hosts use 16384.
-          codesign -s - --force --pagesize 4096 "{{.WORK}}/build64/$p/"*.app
           ls -d "{{.WORK}}/build64/$p/"*.app
         done

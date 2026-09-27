@@ -345,3 +345,5 @@ This section records each attempt that failed, and the cause.
   bytes (121 hashes). The UUID of each slice was the same, thus the code was
   the same. Without the signature, the tracker was the same, byte for
   byte. The build now signs again with `--pagesize 4096`.
+- The Makefile in the supplement now signs with `--pagesize 4096`. The new
+  supplement is supplement-2e151951.zip. The build does not sign again.
