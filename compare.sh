@@ -40,6 +40,18 @@ for prog in client server tracker; do
 					echo "  $arch uuid: $(otool -arch $arch -l "$pe" | awk '/LC_UUID/{f=1} f&&/uuid/{print $2; exit}') and $(otool -arch $arch -l "$ne" | awk '/LC_UUID/{f=1} f&&/uuid/{print $2; exit}')"
 				done
 				cmp -l "$pe" "$ne" 2>/dev/null | head -8 | sed 's/^/  offset /'
+				# The ad hoc signature is at the end of each slice. Compare
+				# again without it.
+				t=$(mktemp -d)
+				cp "$pe" "$t/pub"; cp "$ne" "$t/new"
+				codesign --remove-signature "$t/pub"; codesign --remove-signature "$t/new"
+				if cmp -s "$t/pub" "$t/new"; then
+					echo "  executable without its signature: same"
+				else
+					echo "  executable without its signature: DIFFERS, $(cmp -l "$t/pub" "$t/new" | wc -l | tr -d ' ') bytes"
+				fi
+				for f in "$pe" "$ne"; do codesign -dvvv "$f" 2>&1 | grep -E "^(Hash type|CandidateCDHash|CDHash|Format|Signature size|CodeDirectory v)" | sed 's/^/  /'; done
+				rm -rf "$t"
 			fi
 		fi
 		continue
